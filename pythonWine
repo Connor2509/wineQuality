@@ -1,0 +1,82 @@
+import pandas as pd
+
+# Loads the files
+red_wine_data = pd.read_csv('winequality-red.csv', sep=';')
+white_wine_data = pd.read_csv('winequality-white.csv', sep=';')
+
+
+def rule_based_classifier_method_1(row):
+    if row['alcohol'] > 11 and row['volatile acidity'] < 0.3 and row['sulphates'] > 0.7:
+        return "high quality"
+    elif 10 <= row['alcohol'] <= 11 and 0.3 <= row['volatile acidity'] <= 0.5 and 0.5 <= row['sulphates'] <= 0.7:
+        return "medium quality"
+    else:
+        return "low quality"
+
+
+def rule_based_classifier_method_2(row):
+    # Handle missing data and include medium quality category
+    if pd.isnull(row['alcohol']) or pd.isnull(row['volatile acidity']) or pd.isnull(row['sulphates']):
+        return "undefined"  # Handle missing data
+    if row['alcohol'] > 11 and row['volatile acidity'] < 0.3 and row['sulphates'] > 0.7:
+        return "high quality"
+    elif 10 <= row['alcohol'] <= 11 and 0.3 <= row['volatile acidity'] <= 0.5 and 0.5 <= row['sulphates'] <= 0.7:
+        return "medium quality"
+    else:
+        return "low quality"
+
+# asks input from the user
+print("Choose a classification method for wine quality:")
+print("1: Method 1 - Measuring for the level of sulphates)")
+print("2: Method 2 - Measuring the residual sugars")
+method_choice = input("Enter 1 or 2: ").strip()
+
+# Assign the classifier based on user choice
+if method_choice == '1':
+    classifier = rule_based_classifier_method_1
+    print("\nUsing Method 1")
+elif method_choice == '2':
+    classifier = rule_based_classifier_method_2
+    print("\nUsing Method 2:")
+else:
+    print("\nInvalid input. Defaulting to Method 1.")
+    classifier = rule_based_classifier_method_1
+
+# Apply the chosen classifier to both data files
+red_wine_data['predicted_quality'] = red_wine_data.apply(classifier, axis=1)
+white_wine_data['predicted_quality'] = white_wine_data.apply(classifier, axis=1)
+
+# show the count of predictions for both datasets
+print("\nPrediction Counts for Red Wine:")
+print(red_wine_data['predicted_quality'].value_counts())
+
+print("\nPrediction Counts for White Wine:")
+print(white_wine_data['predicted_quality'].value_counts())
+
+
+
+def alternative_rule_based_classifier(row):
+    # High quality
+    if (row['residual sugar'] < 10 and
+        0.3 <= row['volatile acidity'] <= 0.6 and
+        0.990 <= row['density'] <= 1.005):
+        return "high quality"
+    # Medium quality
+    elif (10 <= row['residual sugar'] <= 20 and
+          0.6 < row['volatile acidity'] <= 0.8 and
+          1.005 < row['density'] <= 1.020):
+        return "medium quality"
+    # Low quality
+    else:
+        return "low quality"
+
+# Apply the classifier to the red and white wine datasets
+red_wine_data['predicted_quality'] = red_wine_data.apply(alternative_rule_based_classifier, axis=1)
+white_wine_data['predicted_quality'] = white_wine_data.apply(alternative_rule_based_classifier, axis=1)
+
+# Display a sample of predictions
+print("\nSample of predictions for Red Wine:")
+print(red_wine_data[['residual sugar', 'volatile acidity', 'density', 'sulphates','quality', 'predicted_quality']].head())
+
+print("\nSample of predictions for White Wine:")
+print(white_wine_data[['residual sugar', 'volatile acidity', 'density', 'sulphates', 'quality', 'predicted_quality']].head())
